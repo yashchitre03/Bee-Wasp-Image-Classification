@@ -1,8 +1,5 @@
 # Bee-Wasp Image classification
 
-### Keywords
-Image classification, Convolutional Neural Networks (CNN), Bee-wasp, ResNet, MobileNet
-
 ## Introduction
 Computer Vision, the study of visual data, has proliferated in the past decade. This can be attributed to the development of various deep learning techniques in the machine learning field. Few decades ago, we could see and manipulate image data, but it was not possible to get inference from large sizes of image data due to insufficient resources and algorithms that just didn’t perform well on large and complex datasets. This has changed today with neural networks and powerful local machines that can achieve much better accuracies on ginormous datasets.
 One of the fundamental tasks for any labelled data is the classification problem. The classic dataset in computer vision field for classification is the MNIST dataset. Now the question arises, if a model has already performed well on a dataset for classification, why do we need to test it on other datasets (considering we are using the new dataset just for analyzing a models’ performance)? Well, the answer is simple, not every dataset is the same. There was a time when algorithms struggled on the MNIST dataset for number classification. But todays algorithms achieve almost perfect results on its testing data. This does not mean we have found the perfect algorithm for image classification.
@@ -23,62 +20,86 @@ In this section we will look at the dataset and the three models in greater deta
 Each model has an optimal learning rate set to 0.0001 and uses a soft-max activation function on the final layer for this classification task. They are trained for a maximum of 50 epochs and an early-stopping callback method is defined to stop the training when the validation loss does not improve over a set number of epochs. When this method is executed, only the best weights found are restored and used. Also, I have used binary cross-entropy to compute the losses.
 
 ### Data
- 
+
+![Dataset size](results/bar_plot.png)
+
 Figure 1: Dataset size
+
 The dataset consists of four categories, bees, wasps, other insects, and flowers. The bee, wasp and insect images are collected from Kaggle dataset by Callum Robertson and George Ray.1 The authors themselves have collected the data from multiple other Kaggle datasets and Fliker image data. Finally, the flower dataset is collected from VGG at the University of Oxford.2 This leads to a total size of over 11,000 images as shown in figure 1, with an 80-10-10 split for training-validation-testing respectively. The reasons for adding two more categories to the bee-wasp classification task are as follows:
 1.	Foreground bias: After training on the bee-wasp dataset, suppose we show the model an image of a fly. Looking at the similar structure and shape, the model might classify it as a bee or a wasp. But this is misleading and that is why it was necessary to add images of tons of other insect species so that the model not only learns the general structure of the insect but also peculiar details of wasps and bees.
 2.	Background bias: If the images are closely observed, there are a lot of images with the background of flower, especially for the bee category. We don’t want the model to associate a flower with bees. This may lead to incorrect predictions with just flowers in the image classified as bees. So, a fourth category of flowers is added for more accurate model learning.
  
+![Bees](results/bee.png)
+
 Figure 2-a: Bees
 
- 
+![Wasps](results/wasp.png) 
+
 Figure 2-b: Wasps
 
- 
+![Insects](results/insect.png)
+
 Figure 2-c: Other insects
 
- 
+![Flowers](results/flower.png)
+
 Figure 2-d: Flowers
+
 Figure 2 shows randomly sampled images from the dataset for each label. The bee and wasp categories also contain a lot of low-quality images, which will make our model more robust to zoomed in images taken from smartphones.
 
 ### Model
-The three models used in this project are discussed in greater detail below. We will look at its architecture and complexity. All models have a pooling layer (either max pooling or average pooling layer) for reducing the dimensions and dropout for reducing over-fitting. Even though pre-trained models have been used in some layers, they are still trained further with the other layers for this dataset.3
+The three models used in this project are discussed in greater detail below. We will look at its architecture and complexity. All models have a pooling layer (either max pooling or average pooling layer) for reducing the dimensions and dropout for reducing over-fitting. Even though pre-trained models have been used in some layers, they are still trained further with the other layers for this dataset.
 
+1. ResNet50 V2
 
+![ResNet50 v2](results/model1.png)
 
-
-
-
-
-1.	https://www.kaggle.com/jerzydziewierz/bee-vs-wasp
-2.	https://www.robots.ox.ac.uk/~vgg/data/flowers/17/
-3.	https://keras.io/api/applications/
-ResNet50 V2
- 
 Figure 3-a: with ResNet50 V2
+
 In the course, we have seen how increasing the model complexity does not always help achieving better results. This is because the gradient calculated grows exponentially small or large as we go towards the start of the model, which is known as the vanishing or exploding gradient problem. ResNet solved this problem by building skip connections between the layers so that the gradient can flow easily without causing the aforementioned problem. Such a model will tell us what a highly complex model achieves on our current dataset. This also gives us a benchmark for the simpler models discussed later. Figure 3-a shows the general model structure. This model has around 25 million parameters.
-MobileNet V2
- 
+
+2. MobileNet V2
+
+![MobileNet v2](results/model2.png)
+
 Figure 3-b: with MobileNet V2
+
 Since, we also want to try the simpler models (complexity-wise) on the data, we will try another state-of-the-art model, MobileNet, with just around 3 million parameters. This kind of model is made to achieve good results and perform well on embedded devices.
-Custom CNN model
- 
+
+3. Custom CNN model
+
+![CNN](results/model3.png)
+
 Figure 3-c: model with 2 convolutional layers
+
 Finally, to reduce the complexity further, I made a model without any pre-trained layers. It consists of only two 2D convolutional layers. Each convolutional layer is followed by a max-pooling layer to reduce dimensionality and a dropout layer to avoid overfitting. The dropout layers can drop up to 20% of the neurons while training for robustness of the model.
 Finally, we have a flatten layer, since the goal is image classification, followed by a dense layer for prediction between the four classes. This approach has just over a million trainable parameters making it significantly less complex than the other three models. For visualization it has only 4% of the parameters in the ResNet model and 33% of the parameters in the MobileNet model.
 
 ## Results
 In figure 4, the blue line is for the ResNet model, green line is the MobileNet model, and red is the custom CNN model. The dotted lines are the validation accuracies for the same models.
- 
+
+![Accuracy](results/acc.png)
+
 Figure 4-a: Training and validation accuracy
+
 From the figures, we can observe that both the pre-trained models have achieved an almost perfect accuracy on the training set and over 90% accuracy on the validation set. The MobileNet architecture has performed as good if not better than the other. This goes to show that it is not important to have a more complex model to get better results on all datasets. MobileNet has the right balance between performance and efficiency among all three.
 The third CNN model has also performed well with over 90% of training accuracy and 80% of validation accuracy. This is a respectable result for a model that is a fraction of the size of the other models. Another observation is the number of epochs required for training for each model. Overall, higher the complexity, lesser number of epochs is required for the model to train. So, if one can parallelize the model and requires faster training, they can use such a complex model.
- 
+
+![Loss](results/loss.png)
+
 Figure 4-b: Training and validation loss
+
 Both the ResNet and MobileNet models have achieved similar results on test data. Around 92%, which is also close to the validation results. ResNet only has a slightly lower loss than MobileNet, but again, MobileNet offers the right balance, atleast for this dataset. Finally, the third models’ around 80% test accuracy is also respectable (though it has much higher loss).
- 
+
+![Metrics](results/table.png)
+
 Figure 4-c: Testing set metrics
 
 ## Conclusions and Future Work
 This project presented the uniqueness of the bee-wasp dataset. It showed us the challenges faced, and why it was necessary to expand the dataset into more categories (other insects and flowers). We looked at some of the deep learning approaches after ruling out the naïve machine learning algorithms. We also analyzed the results over changing model complexity. Even though the ResNet model performed the best, MobileNet is the most suitable for this application of classifying insects.
 As a future scope, it is possible to analyze the third model in greater detail and try to modify it. The goal will remain the same, improve the performance without increasing the complexity too much. Also, more low-quality images could be collected in the future to study specifically the impact of image quality on the model performance. This project could also be hosted online where people can upload bee and wasp photos to expand the dataset size further.
+
+## References
+1. [Bee-wasp dataset](https://www.kaggle.com/jerzydziewierz/bee-vs-wasp)
+2. [Flowers dataset](https://www.robots.ox.ac.uk/~vgg/data/flowers/17/)
+3. [Keras pre-trained models](https://keras.io/api/applications/)
